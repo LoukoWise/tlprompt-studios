@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TLPrompt Web</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .controls {
+      padding: 1rem;
+      background: #222;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-size: 1rem;
+    }
+    .teleprompter {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      background: #000;
+    }
+    .scrolling-text {
+      position: absolute;
+      white-space: pre-wrap;
+      text-align: center;
+      width: 100%;
+      font-size: 2rem;
+    }
+    button, input[type="range"] {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="startScroll()">▶ Start</button>
+    <button onclick="stopScroll()">⏹ Stop</button>
+    <label>Speed: <input type="range" min="1" max="10" value="3" id="speedControl"></label>
+  </div>
+
+  <textarea id="scriptInput">Welcome to TLPrompt Studios. Prompt. Record. Convert.</textarea>
+
+  <div class="teleprompter">
+    <div class="scrolling-text" id="scrollingText"></div>
+  </div>
+
+  <script>
+    const scrollingText = document.getElementById("scrollingText");
+    const scriptInput = document.getElementById("scriptInput");
+    const speedControl = document.getElementById("speedControl");
+    let scrollInterval;
+
+    function startScroll() {
+      scrollingText.innerText = scriptInput.value;
+      scrollingText.style.top = "100%";
+      clearInterval(scrollInterval);
+      let speed = 11 - parseInt(speedControl.value);
+      scrollInterval = setInterval(() => {
+        let currentTop = parseFloat(getComputedStyle(scrollingText).top);
+        scrollingText.style.top = (currentTop - 1) + "px";
+        if (currentTop <= -scrollingText.offsetHeight) {
+          clearInterval(scrollInterval);
+        }
+      }, speed * 10);
+    }
+
+    function stopScroll() {
+      clearInterval(scrollInterval);
+    }
+  </script>
+</body>
+</html>
