@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TLPrompt Studios</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #videoWrapper {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+    }
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+    .scrolling-text {
+      position: absolute;
+      top: 100%;
+      width: 100%;
+      text-align: center;
+      font-size: 2rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      color: white;
+      z-index: 2;
+    }
+    .controls {
+      padding: 10px;
+      background: #111;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      font-size: 1rem;
+      padding: 10px;
+      background: #222;
+      color: #fff;
+      border: none;
+      resize: none;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <textarea id="scriptInput">Welcome to TLPrompt Studios. Prompt. Record. Convert.</textarea>
+    <button onclick="startScroll()">▶ Start Scroll</button>
+  </div>
+  <div id="videoWrapper">
+    <video id="camera" autoplay muted playsinline></video>
+    <div class="scrolling-text" id="scrollingText"></div>
+  </div>
+
+  <script>
+    const video = document.getElementById('camera');
+    const scrollingText = document.getElementById('scrollingText');
+    const scriptInput = document.getElementById('scriptInput');
+    let scrollInterval;
+
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (err) {
+        alert('Unable to access camera: ' + err.message);
+      }
+    }
+
+    function startScroll() {
+      scrollingText.innerText = scriptInput.value;
+      scrollingText.style.top = '100%';
+      clearInterval(scrollInterval);
+      scrollInterval = setInterval(() => {
+        let currentTop = parseFloat(getComputedStyle(scrollingText).top);
+        scrollingText.style.top = (currentTop - 1) + 'px';
+        if (currentTop <= -scrollingText.offsetHeight) {
+          clearInterval(scrollInterval);
+        }
+      }, 30);
+    }
+
+    window.onload = initCamera;
+  </script>
+</body>
+</html>
