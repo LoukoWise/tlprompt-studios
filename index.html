@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TLPrompt Studios - Enhanced</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .controls {
+      background: #111;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-around;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      font-size: 1rem;
+      padding: 10px;
+      background: #222;
+      color: #fff;
+      border: none;
+      resize: none;
+    }
+    canvas {
+      width: 100%;
+      height: 60vh;
+      background: black;
+    }
+    button, input[type="range"] {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+    }
+    #downloadLink {
+      color: #4fc3f7;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <textarea id="scriptInput">Welcome to TLPrompt Studios. Prompt. Record. Convert.</textarea>
+    <label>Speed:
+      <input type="range" min="1" max="10" value="3" id="speedControl" oninput="updateSpeed(this.value)">
+    </label>
+    <button onclick="startScroll()">▶ Start Scroll</button>
+    <button onclick="stopScroll()">⏹ Stop Scroll</button>
+    <button onclick="startRecording()">⏺ Start Recording</button>
+    <button onclick="stopRecording()">⏹ Stop Recording</button>
+    <a id="downloadLink" download="tlprompt-video.webm">⬇ Download Video</a>
+  </div>
+
+  <canvas id="canvas"></canvas>
+  <video id="video" autoplay muted playsinline style="display:none;"></video>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const video = document.getElementById('video');
+    const scriptInput = document.getElementById('scriptInput');
+    const speedControl = document.getElementById('speedControl');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let scrollPosition;
+    let scrollSpeed = 80;
+    let scrollInterval;
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight * 0.6;
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        video.srcObject = stream;
+        video.play();
+
+        function drawFrame() {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = 'white';
+          ctx.font = '36px Arial';
+          ctx.textAlign = 'center';
+
+          const lines = scriptInput.value.split('\n');
+          lines.forEach((line, index) => {
+            ctx.fillText(line, canvas.width / 2, scrollPosition + index * 50);
+          });
+
+          if (scrolling) {
+            scrollPosition -= 1;
+          }
+
+          requestAnimationFrame(drawFrame);
+        }
+
+        drawFrame();
+      })
+      .catch(err => alert('Camera access failed: ' + err.message));
+
+    let scrolling = false;
+
+    function updateSpeed(value) {
+      scrollSpeed = (11 - parseInt(value)) * 10;
+    }
+
+    function startScroll() {
+      scrollPosition = canvas.height;
+      scrolling = true;
+    }
+
+    function stopScroll() {
+      scrolling = false;
+    }
+
+    function startRecording() {
+      recordedChunks = [];
+      const canvasStream = canvas.captureStream(30);
+      const audioTracks = video.srcObject.getAudioTracks();
+      if (audioTracks.length > 0) {
+        canvasStream.addTrack(audioTracks[0]);
+      }
+
+      mediaRecorder = new MediaRecorder(canvasStream);
+      mediaRecorder.ondataavailable = function (e) {
+        if (e.data.size > 0) {
+          recordedChunks.push(e.data);
+        }
+      };
+      mediaRecorder.onstop = function () {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        downloadLink.style.display = 'inline';
+      };
+
+      mediaRecorder.start();
+      downloadLink.style.display = 'none';
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+    }
+  </script>
+</body>
+</html>
