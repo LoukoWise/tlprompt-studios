@@ -73,6 +73,11 @@
     <label>Text Size:
       <input type="range" min="20" max="60" value="32" id="textSizeControl" oninput="updateTextSize(this.value)">
     </label>
+    <label>Text Position:
+      <input type="range" min="0" max="100" value="50" id="textPositionControl" oninput="updateTextPosition(this.value)">
+    </label>
+      <input type="range" min="20" max="60" value="32" id="textSizeControl" oninput="updateTextSize(this.value)">
+    </label>
       <input type="range" min="1" max="10" value="3" id="speedControl" oninput="updateSpeed(this.value)">
     </label>
     <button onclick="startScroll()">▶ Start Scroll</button>
@@ -88,6 +93,11 @@
     
 
   <script>
+    function updateTextPosition(percent) {
+      scrollingText.style.top = percent + '%';
+      scrollingText.style.transform = 'translateY(-' + percent + '%)';
+    }
+    
     function updateTextSize(size) {
       scrollingText.style.fontSize = size + 'px';
       scrollingText.style.top = '50%';
@@ -166,6 +176,9 @@
 
     
     window.onload = () => {
+      updateTextSize(document.getElementById('textSizeControl').value);
+      updateTextPosition(document.getElementById('textPositionControl').value);
+    };
       initCamera();
       updateTextSize(document.getElementById('textSizeControl').value);
     };
